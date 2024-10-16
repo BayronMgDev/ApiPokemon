@@ -1,13 +1,13 @@
 package com.proyectofinal.pokemonapi.Model;
 
-public class PrevEvolution {
+public class Evolution {
     private String name;
     private String num;
 
-    public PrevEvolution() {
+    public Evolution() {
     }
 
-    public PrevEvolution(String name, String num) {
+    public Evolution(String name, String num) {
         this.name = name;
         this.num = num;
     }

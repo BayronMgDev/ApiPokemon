@@ -6,16 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import android.view.MenuItem;
 import com.proyectofinal.pokemonapi.Common.Common;
 import com.proyectofinal.pokemonapi.Model.Pokemon;
 
@@ -52,18 +50,50 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    BroadcastReceiver showEvolution = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().toString().equals(Common.KEY_NUM_EVOLUTION))
+            {
+                //Reemplaza el Fragment
+
+                Fragment detailFragment = PokemonDetail.getInstance();
+                Bundle bundle = new Bundle();
+                String num = intent.getStringExtra("num");
+                bundle.putString("num",num);
+                detailFragment.setArguments(bundle);
+
+                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.remove(detailFragment);//Eliminar el fragmento actual cuando presiona en la evolucion
+                fragmentTransaction.replace(R.id.listPokemon_fragment,detailFragment);
+                fragmentTransaction.addToBackStack("detail");
+                fragmentTransaction.commit();
+
+                //Establecer el nombre del Pokémon para la barra de herramientas
+
+                Pokemon pokemon = Common.findPokemonByNum(num);
+                toolbar.setTitle(pokemon.getName());
+            }
+        }
+    };
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         toolbar = (Toolbar)findViewById(R.id.toolbar);
-        toolbar.setTitle("POKEMON LIST");
+        toolbar.setTitle("LISTA DE POKEMONES");
         setSupportActionBar(toolbar);
 
         //Registrar BroadCast
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(showDetail, new IntentFilter(Common.KEY_ENEABLE_HOME));
+
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(showEvolution, new IntentFilter(Common.KEY_NUM_EVOLUTION));
 
     }
 
@@ -72,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId())
         {
             case android.R.id.home:
-                toolbar.setTitle("POKEMON LIST");
+                toolbar.setTitle("LISTA DE POKEMONES");
                 //Limpiar todos los detalles del fragment y volver al fragment de lista
                 getSupportFragmentManager().popBackStack("detail", FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
